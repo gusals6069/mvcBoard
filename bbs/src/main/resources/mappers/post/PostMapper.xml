@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        
+<mapper namespace="com.mvc.board.mappers.post.PostMapper">
+		 
+	 <select id="postList" parameterType="com.mvc.board.post.domain.PostVo" resultType="com.mvc.board.post.domain.PostVo">
+        SELECT *
+        FROM(
+	        SELECT A.*, ROWNUM
+	        FROM(
+		        SELECT
+		              A.POST_NO AS postNo
+		            , A.BBS_NO AS bbsNo
+		            , B.CATEGORY_ID AS categoryId
+		            , B.CATEGORY_NM AS categoryNm
+		            , A.POST_TITLE AS postTitle
+		            , A.POST_CONTENT AS postContent
+		            , A.WRITER AS postWriter
+		            , A.REG_DATE AS regDate
+		            , A.UPT_DATE AS uptDate
+		            , A.VIEW_CNT AS viewCnt
+		            , A.REPLY_CNT AS replyCnt
+		        FROM TB_BOARD_POST A, TB_BOARD_CATEGORY B
+		        WHERE A.BBS_NO = B.BBS_NO
+		        AND A.CATEGORY_ID = B.CATEGORY_ID 
+		        AND A.BBS_NO = ${bbsNo}		  
+		        <if test="searchKeyword != null"> 
+		        	<if test="searchType == 1">
+		        		AND A.POST_TITLE LIKE '%' || #{searchKeyword} || '%'
+		        	</if> 
+		        	<if test="searchType == 2">
+		        		AND A.POST_CONTENT LIKE '%' || #{searchKeyword} || '%'
+		        	</if>
+		        	<if test="searchType == 3">
+		        		AND A.WRITER LIKE '%' || #{searchKeyword} || '%'
+		        	</if>
+	        	</if>
+		        ORDER BY A.POST_NO DESC, A.REG_DATE DESC
+	        ) A
+	        WHERE ROWNUM &lt;= #{endRowNum}
+        )
+        WHERE ROWNUM &gt;= #{startRowNum}
+    </select>
+    
+    <select id="postNews" resultType="com.mvc.board.post.domain.PostVo">
+	    SELECT *
+	    FROM(
+		    SELECT
+		          A.POST_NO AS postNo
+		        , A.BBS_NO AS bbsNo
+		        , B.CATEGORY_ID AS categoryId
+		        , B.CATEGORY_NM AS categoryNm
+		        , A.POST_TITLE AS postTitle
+		        , A.POST_CONTENT AS postContent
+		        , A.WRITER AS postWriter
+		        , A.REG_DATE AS regDate
+		        , A.UPT_DATE AS uptDate
+		        , A.VIEW_CNT AS viewCnt
+		        , A.REPLY_CNT AS replyCnt
+		    FROM TB_BOARD_POST A, TB_BOARD_CATEGORY B
+		    WHERE A.BBS_NO = B.BBS_NO
+		    AND A.CATEGORY_ID = B.CATEGORY_ID 
+		    AND A.BBS_NO = 1
+		    AND A.CATEGORY_ID = 1
+		    ORDER BY A.POST_NO DESC, A.REG_DATE DESC
+	    )
+	    WHERE ROWNUM &lt;= 5
+    </select>
+    
+    <select id="postCount" parameterType="com.mvc.board.post.domain.PostVo" resultType="Integer">
+    	SELECT COUNT(*)
+        FROM TB_BOARD_POST
+        WHERE BBS_NO = ${bbsNo}
+        <if test="searchKeyword != null"> 
+        	<if test="searchType == 1">
+        		AND POST_TITLE LIKE '%' || #{searchKeyword} || '%'
+        	</if> 
+        	<if test="searchType == 2">
+        		AND POST_CONTENT LIKE '%' || #{searchKeyword} || '%'
+        	</if>
+        	<if test="searchType == 3">
+        		AND WRITER LIKE '%' || #{searchKeyword} || '%'
+        	</if>
+       	</if>
+    </select>
+
+    <select id="cateList" parameterType="map" resultType="com.mvc.board.post.domain.CategoryVo">
+        SELECT
+              CATEGORY_ID AS categoryId
+            , CATEGORY_NM AS categoryNm
+            , BBS_NO AS bbsNo
+            , REG_DATE AS regDate
+            , UPT_DATE AS uptDate
+        FROM TB_BOARD_CATEGORY
+        WHERE BBS_NO = ${bbsNo}
+        AND USE_YN = 'Y'
+        ORDER BY CATEGORY_ID ASC, REG_DATE DESC
+    </select>
+    
+	<insert id="postCreate" parameterType="com.mvc.board.post.domain.PostVo">
+        INSERT INTO TB_BOARD_POST (
+              POST_NO
+            , BBS_NO
+            , CATEGORY_ID
+            , POST_TITLE
+            , POST_CONTENT
+            , WRITER
+            , REG_DATE
+            , UPT_DATE
+            , VIEW_CNT
+            , REPLY_CNT
+        ) VALUES (
+              (SELECT NVL(MAX(POST_NO),0)+1 FROM TB_BOARD_POST)
+            , ${bbsNo}
+            , ${categoryId}
+            , #{postTitle}
+            , #{postContent}
+            , #{postWriter}
+            , SYSDATE
+            , SYSDATE
+            , 0
+            , 0
+        )
+    </insert>
+    
+    <select id="postView" parameterType="map" resultType="com.mvc.board.post.domain.PostVo">
+        SELECT
+              A.POST_NO AS postNo
+            , A.BBS_NO AS bbsNo
+            , B.CATEGORY_ID AS categoryId
+            , B.CATEGORY_NM AS categoryNm
+            , A.POST_TITLE AS postTitle
+            , A.POST_CONTENT AS postContent
+            , A.WRITER AS postWriter
+            , A.REG_DATE AS regDate
+            , A.UPT_DATE AS uptDate
+            , A.VIEW_CNT AS viewCnt
+            , A.REPLY_CNT AS replyCnt
+        FROM TB_BOARD_POST A, TB_BOARD_CATEGORY B
+        WHERE A.BBS_NO = B.BBS_NO
+        AND A.CATEGORY_ID = B.CATEGORY_ID 
+        AND POST_NO = ${postNo}
+    </select>
+    
+    <update id="postUpdate" parameterType="com.mvc.board.post.domain.PostVo">
+        UPDATE TB_BOARD_POST
+        SET
+        	CATEGORY_ID = ${categoryId},
+            POST_TITLE = #{postTitle}, 
+            POST_CONTENT = #{postContent},
+            UPT_DATE = SYSDATE
+        WHERE
+            POST_NO = ${postNo}
+    </update>
+    
+    <delete id="postDelete" parameterType="map">
+        DELETE FROM TB_BOARD_POST
+        WHERE POST_NO = ${postNo}
+    </delete>
+    
+</mapper>

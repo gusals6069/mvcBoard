@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        
+<mapper namespace="com.mvc.board.mappers.reply.ReplyMapper">
+	
+	<select id="replyList" parameterType="com.mvc.board.post.domain.PostVo" resultType="com.mvc.board.reply.domain.ReplyVo">
+		SELECT
+          	REPLY_NO AS replyNo,
+		    POST_NO AS postNo,
+		    REPLY_CONTENT AS replyContent,
+		    REPLY_WRITER AS replyWriter,
+		    REG_DATE AS regDate, 
+		    UPT_DATE AS uptDate
+        FROM TB_BOARD_REPLY
+        WHERE POST_NO = ${postNo}
+        ORDER BY REPLY_NO ASC
+	</select>
+	
+	<insert id="replyCreate">
+		INSERT TB_BOARD_REPLY(
+			REPLY_NO,
+		    POST_NO,
+		    REPLY_CONTENT,
+		    REPLY_WRITER,
+		    REG_DATE, 
+		    UPT_DATE 
+		)VALUES(
+			(SELECT NVL(MAX(REPLY_NO),0)+1 FROM TB_BOARD_REPLY),
+			${postNo},
+			#{replyContent},
+			#{replyWriter},
+			SYSDATE,
+			SYSDATE
+		)
+	</insert>
+	
+	<update id="replyUpdate">
+		UPDATE TB_BOARD_REPLY
+		SET REPLY_CONTENT = #{replyContent},
+			UPT_DATE = SYSDATE
+		WHERE REPLY_NO = ${replyNo}
+	</update>
+	
+	<delete id="replyDelete">
+		DELETE FROM TB_BOARD_REPLY
+        WHERE REPLY_NO = ${replyNo}
+	</delete>
+	
+</mapper>

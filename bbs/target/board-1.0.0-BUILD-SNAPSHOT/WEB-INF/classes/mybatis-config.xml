@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//www.mybatis.org//DTD Config 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<setting name="cacheEnabled" value="true" />
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+		<setting name="logImpl" value="SLF4J" />
+	</settings>
+
+	<typeAliases>
+       <!--  <package name="com.sample.bbs"/> -->
+       <typeAlias type="com.mvc.board.post.domain.PostVo" alias="PostVo"/>
+       <typeAlias type="com.mvc.board.reply.domain.ReplyVo" alias="ReplyVo"/>
+    </typeAliases>
+    
+</configuration>
